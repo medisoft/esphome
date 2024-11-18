@@ -2,11 +2,11 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.const import CONF_ID
 
-esp_now_ns = cg.esphome_ns.namespace('esp_now')
-ESPNow = esp_now_ns.class_('ESPNow', cg.Component)
+empty_component_ns = cg.esphome_ns.namespace('empty_component')
+EmptyComponent = empty_component_ns.class_('EmptyComponent', cg.Component)
 
 CONFIG_SCHEMA = cv.Schema({
-    cv.GenerateID(): cv.declare_id(ESPNow)
+    cv.GenerateID(): cv.declare_id(EmptyComponent)
 }).extend(cv.COMPONENT_SCHEMA)
 
 def to_code(config):
