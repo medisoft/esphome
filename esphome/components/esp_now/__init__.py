@@ -1,18 +1,22 @@
 import esphome.codegen as cg
-import esphome.config_validation as cv
+from esphome.core import CORE, coroutine
+
 from . import component
-from esphome.const import CONF_ID
 
-# Definir el namespace del componente
-esp_now_ns = cg.esphome_ns.namespace("esp_now")
-ESPNow = esp_now_ns.class_("ESPNow", cg.Component)
+# the following imports referenced implicitly by @automation.register_action
+from . import inject_action  # noqa: F401
+from . import send_action  # noqa: F401
+from . import terminal_action  # noqa: F401
 
-# Definir las opciones de configuración
-CONFIG_SCHEMA = cv.Schema({
-    cv.GenerateID(): cv.declare_id(ESPNow),
-}).extend(component.COMPONENT_SCHEMA)
+CONFIG_SCHEMA = component.COMPONENT_SCHEMA
 
-# Función para registrar el componente
-async def to_code(config):
-    var = cg.new_Pvariable(config[CONF_ID])
-    await cg.register_component(var, config)
+CODEOWNERS = ["@medisoft"]
+
+
+@coroutine
+def to_code(config):
+    cg.add_define("WIFI_BASIC_COOP")
+    cg.add_define("USE_ESPNOW")
+    if CORE.is_esp8266:
+        cg.add_library("ESP8266WiFi", None)
+    yield component.wifi_now_component_to_code(config)
