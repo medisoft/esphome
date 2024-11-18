@@ -11,7 +11,14 @@
 #include <WiFiType.h>
 #include <WiFi.h>
 #endif
+
+#include <utility>
 #include "esphome/core/log.h"
+#include "esphome/core/defines.h"
+#include "esphome/core/automation.h"
+#include "esphome/core/base_automation.h"
+#include "esphome/core/component.h"
+
 #include "esp_now.h"
 namespace esphome {
 namespace esp_now {
@@ -76,11 +83,11 @@ void ESPNow::setup() {
   //   this->mark_failed();
   //   return;
   // }
-  // if (esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER)) {
-  //   ESP_LOGE(TAG, "esp_now_set_self_role(...) failed()!");
-  //   this->mark_failed();
-  //   return;
-  // }
+  if (esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER)) {
+    ESP_LOGE(TAG, "esp_now_set_self_role(...) failed()!");
+    this->mark_failed();
+    return;
+  }
   // if (aeskey_) {
   //   auto aeskey = aeskey_->data();
   //   if (esp_now_set_kok(aeskey, 16)) {
@@ -234,7 +241,6 @@ void ESPNow::ping() {
     esp_now_add_peer(peer_addr, ESP_NOW_ROLE_SLAVE, this->channel_, NULL, 0);
   }
 
-  esp_now_set_self_role(ESP_NOW_ROLE_CONTROLLER);
   commandData.msgType = ServerCommands::PING;
   esp_err_t result = esp_now_send(peer_addr, (uint8_t *) &commandData, sizeof(commandData));
   printBroadcastResponse(result, peer);
@@ -304,6 +310,7 @@ void ICACHE_FLASH_ATTR receivecallback(uint8_t *bssid, uint8_t *data, uint8_t le
     case ServerCommands::PONG:
       ESP_LOGI(TAG, "Received PONG from %s", macStr);
       // missedPongCounter = 0;
+
       break;
     case ServerCommands::PREVENT_DISCOVERY:
       ESP_LOGI(TAG, "Hidding from Discovery mode");
